@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>オタマトーン Pro</title>
+<title>ぷよトーン</title>
 <style>
 * {
   box-sizing: border-box;
@@ -172,8 +172,8 @@ html, body {
   padding: 12px;
 }
 
-/* オタマトーン本体SVG */
-#otama-svg {
+/* ぷよトーン本体SVG */
+#puyo-svg {
   width: min(55vw, 200px);
   height: auto;
   filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5));
@@ -254,12 +254,12 @@ html, body {
 
 <!-- スタート画面 -->
 <div id="start-overlay">
-  <div class="preview-char">🎵</div>
-  <h1>オタマトーン Pro</h1>
+  <div class="preview-char">🐱</div>
+  <h1>ぷよトーン</h1>
   <p>
-    左：シッポをなぞって音程<br>
-    右ボタン長押し：口パクでワウ<br>
-    細かく震わすとビブラート！
+    左：しっぽをなぞって音程<br>
+    右ボタン長押し：にゃんわう！<br>
+    細かく震わすとビブラート✨
   </p>
   <button id="start-btn">▶ 演奏を始める</button>
 </div>
@@ -279,37 +279,57 @@ html, body {
 
   <!-- 右：顔＆ワウ -->
   <div id="face-section">
-    <!-- オタマトーン SVG キャラ -->
-    <svg id="otama-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
-      <!-- ボディ（しずく型） -->
-      <ellipse cx="100" cy="95" rx="78" ry="88" fill="#fffde7" stroke="#e0d89a" stroke-width="3"/>
+    <!-- ぷよトーン ネコSVGキャラ -->
+    <svg id="puyo-svg" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+      <!-- ネコ耳（左） -->
+      <polygon points="36,72 58,18 80,68" fill="#ffb3d1" stroke="#e080aa" stroke-width="2"/>
+      <polygon points="46,66 60,32 74,64" fill="#ff88bb"/>
+      <!-- ネコ耳（右） -->
+      <polygon points="120,68 142,18 164,72" fill="#ffb3d1" stroke="#e080aa" stroke-width="2"/>
+      <polygon points="126,64 140,32 154,66" fill="#ff88bb"/>
+      <!-- ボディ（ぷよっと丸い） -->
+      <ellipse cx="100" cy="125" rx="82" ry="80" fill="#fff5f8" stroke="#f0b8cc" stroke-width="3"/>
       <!-- 頬 -->
-      <ellipse cx="65" cy="110" rx="14" ry="9" fill="rgba(255,100,120,0.25)"/>
-      <ellipse cx="135" cy="110" rx="14" ry="9" fill="rgba(255,100,120,0.25)"/>
-      <!-- 左目 -->
-      <ellipse cx="76" cy="88" rx="11" ry="13" fill="#222"/>
-      <circle cx="79" cy="84" r="4" fill="#fff"/>
+      <ellipse cx="58" cy="138" rx="17" ry="11" fill="rgba(255,100,150,0.22)"/>
+      <ellipse cx="142" cy="138" rx="17" ry="11" fill="rgba(255,100,150,0.22)"/>
+      <!-- 左目（大きくつぶらな目） -->
+      <ellipse cx="76" cy="110" rx="15" ry="18" fill="#1a1a2e"/>
+      <ellipse cx="76" cy="110" rx="10" ry="13" fill="#2233aa"/>
+      <circle cx="81" cy="103" r="5.5" fill="#fff"/>
+      <circle cx="71" cy="117" r="2" fill="rgba(255,255,255,0.4)"/>
       <!-- 右目 -->
-      <ellipse cx="124" cy="88" rx="11" ry="13" fill="#222"/>
-      <circle cx="127" cy="84" r="4" fill="#fff"/>
+      <ellipse cx="124" cy="110" rx="15" ry="18" fill="#1a1a2e"/>
+      <ellipse cx="124" cy="110" rx="10" ry="13" fill="#2233aa"/>
+      <circle cx="129" cy="103" r="5.5" fill="#fff"/>
+      <circle cx="119" cy="117" r="2" fill="rgba(255,255,255,0.4)"/>
+      <!-- 鼻 -->
+      <polygon points="100,131 96,137 104,137" fill="#ff7799"/>
+      <!-- ひげ（左） -->
+      <line x1="30" y1="135" x2="88" y2="139" stroke="rgba(180,180,200,0.7)" stroke-width="1.5"/>
+      <line x1="28" y1="143" x2="88" y2="143" stroke="rgba(180,180,200,0.7)" stroke-width="1.5"/>
+      <line x1="32" y1="151" x2="88" y2="147" stroke="rgba(180,180,200,0.7)" stroke-width="1.5"/>
+      <!-- ひげ（右） -->
+      <line x1="170" y1="135" x2="112" y2="139" stroke="rgba(180,180,200,0.7)" stroke-width="1.5"/>
+      <line x1="172" y1="143" x2="112" y2="143" stroke="rgba(180,180,200,0.7)" stroke-width="1.5"/>
+      <line x1="168" y1="151" x2="112" y2="147" stroke="rgba(180,180,200,0.7)" stroke-width="1.5"/>
       <!-- 口（動的に変化） -->
       <g id="mouth-group">
-        <!-- 閉じた口 -->
-        <path id="mouth-closed" d="M78 118 Q100 126 122 118" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round"/>
-        <!-- 開いた口（初期非表示） -->
-        <ellipse id="mouth-open" cx="100" cy="124" rx="24" ry="16" fill="#cc2244" stroke="#333" stroke-width="3" opacity="0"/>
-        <!-- 歯（開いたとき） -->
-        <rect id="mouth-teeth" x="82" y="116" width="36" height="10" rx="4" fill="white" opacity="0"/>
+        <!-- 閉じた口（ω型） -->
+        <path id="mouth-closed" d="M90 144 Q95 150 100 147 Q105 150 110 144" fill="none" stroke="#cc5577" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- 開いた口 -->
+        <ellipse id="mouth-open" cx="100" cy="150" rx="20" ry="14" fill="#cc2244" stroke="#aa1133" stroke-width="2" opacity="0"/>
+        <!-- 歯 -->
+        <rect id="mouth-teeth" x="87" y="142" width="26" height="9" rx="4" fill="white" opacity="0"/>
       </g>
-      <!-- シッポ（下に伸びる） -->
-      <path d="M85 175 Q75 195 60 210 Q80 200 100 215 Q120 200 140 210 Q125 195 115 175 Z" fill="#fffde7" stroke="#e0d89a" stroke-width="2"/>
+      <!-- しっぽ（ネコ風にくるっと） -->
+      <path d="M84 197 Q72 218 56 228 Q76 220 100 232 Q124 220 144 228 Q128 218 116 197 Z" fill="#fff5f8" stroke="#f0b8cc" stroke-width="2"/>
     </svg>
 
     <!-- 現在の音名 -->
     <div id="note-display">--</div>
 
-    <!-- ワウボタン -->
-    <div id="wah-btn">👄 口パク（ワウ）</div>
+    <!-- にゃんわうボタン -->
+    <div id="wah-btn">🐱 にゃんわう！</div>
   </div>
 </div>
 
@@ -323,7 +343,7 @@ html, body {
 
 <script>
 // ====================================================
-//  オタマトーン Pro — Web Audio Engine
+//  ぷよトーン — Web Audio Engine
 // ====================================================
 let audioCtx = null;
 let osc = null;
@@ -489,7 +509,7 @@ function onStemTouch(y, isStart) {
     gainNode.gain.setTargetAtTime(0.28, audioCtx.currentTime, 0.015);
     osc.frequency.cancelScheduledValues(audioCtx.currentTime);
     osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    document.getElementById('otama-svg').style.transform = 'scale(1.06) rotate(-2deg)';
+    document.getElementById('puyo-svg').style.transform = 'scale(1.06) rotate(-2deg)';
   } else {
     // ポルタメント
     osc.frequency.setTargetAtTime(freq, audioCtx.currentTime, GLIDE_T);
@@ -531,7 +551,7 @@ function onStemEnd() {
   volBar.style.height = '0%';
   deactivateVibrato();
   prevYs = [];
-  document.getElementById('otama-svg').style.transform = 'scale(1)';
+  document.getElementById('puyo-svg').style.transform = 'scale(1)';
 }
 
 stemTrack.addEventListener('touchstart', e => {

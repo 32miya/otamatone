@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>オタマトーン Pro</title>
+<style>
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+html, body {
+  margin: 0; padding: 0;
+  width: 100%; height: 100%;
+  background: #0d0d1a;
+  overflow: hidden;
+  touch-action: none;
+  font-family: 'Helvetica Neue', sans-serif;
+}
+
+/* ===== スタート画面 ===== */
+#start-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #0d0d1a 0%, #1a0033 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  gap: 16px;
+}
+#start-overlay h1 {
+  color: #fff;
+  font-size: clamp(22px, 5vw, 36px);
+  margin: 0;
+  letter-spacing: 2px;
+}
+#start-overlay p {
+  color: #aaa;
+  font-size: 14px;
+  margin: 0;
+  text-align: center;
+  line-height: 1.8;
+}
+#start-btn {
+  margin-top: 12px;
+  padding: 16px 48px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  background: linear-gradient(135deg, #ff3366, #ff6b35);
+  border: none;
+  border-radius: 50px;
+  box-shadow: 0 6px 24px rgba(255,51,102,0.5);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+#start-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 10px rgba(255,51,102,0.3);
+}
+.preview-char {
+  font-size: 64px;
+  animation: float 2s ease-in-out infinite;
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+
+/* ===== メインレイアウト ===== */
+#app {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* ===== 左：シッポ ===== */
+#stem-section {
+  flex: 0 0 42%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  gap: 8px;
+}
+#stem-section .label {
+  color: #88aaff;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+#stem-wrap {
+  position: relative;
+  width: 64px;
+  flex: 1;
+  max-height: 88%;
+}
+
+#stem-track {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom,
+    #6633ff 0%, #3366ff 20%, #0099ff 40%,
+    #00cc66 55%, #ffcc00 70%, #ff6600 85%, #ff0033 100%);
+  border-radius: 32px;
+  border: 3px solid rgba(255,255,255,0.25);
+  box-shadow: 0 0 20px rgba(100,100,255,0.3), inset 0 0 12px rgba(0,0,0,0.4);
+  cursor: pointer;
+}
+
+/* 音名ラベル */
+.note-label {
+  position: absolute;
+  right: calc(100% + 8px);
+  transform: translateY(-50%);
+  color: rgba(255,255,255,0.6);
+  font-size: 10px;
+  font-weight: bold;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.note-label::after {
+  content: '';
+  position: absolute;
+  left: calc(100% + 4px);
+  top: 50%;
+  width: 8px;
+  height: 1px;
+  background: rgba(255,255,255,0.3);
+}
+
+/* 指示ドット */
+#stem-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  background: radial-gradient(circle, #fff 30%, rgba(255,255,255,0.4));
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(255,255,255,0.8), 0 0 30px rgba(255,255,255,0.4);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.hint-text {
+  color: #556;
+  font-size: 10px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ===== 右：フェイス ===== */
+#face-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 12px;
+}
+
+/* オタマトーン本体SVG */
+#otama-svg {
+  width: min(55vw, 200px);
+  height: auto;
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5));
+  transition: transform 0.08s ease;
+}
+
+/* 音名表示 */
+#note-display {
+  color: #fff;
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 4px;
+  text-shadow: 0 0 20px rgba(100,200,255,0.8);
+  min-height: 38px;
+  transition: opacity 0.2s;
+  opacity: 0;
+}
+#note-display.active { opacity: 1; }
+
+/* ワウボタン */
+#wah-btn {
+  width: min(52vw, 180px);
+  padding: 16px 0;
+  background: linear-gradient(135deg, #ff3366, #cc1144);
+  color: white;
+  font-weight: bold;
+  font-size: 15px;
+  border-radius: 50px;
+  text-align: center;
+  box-shadow: 0 6px 0 #880022, 0 8px 20px rgba(255,51,102,0.4);
+  transition: transform 0.05s, box-shadow 0.05s;
+  cursor: pointer;
+}
+#wah-btn.pressed {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #880022, 0 4px 10px rgba(255,51,102,0.3);
+}
+
+/* ===== 音量バー（右端） ===== */
+#vol-bar-wrap {
+  position: fixed;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 120px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+#vol-bar {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(to top, #ff3366, #ffcc00, #00ff88);
+  border-radius: 4px;
+  transition: height 0.05s;
+}
+
+/* ===== Vibrato インジケーター ===== */
+#vibrato-indicator {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,200,100,0.8);
+  font-size: 11px;
+  letter-spacing: 2px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+#vibrato-indicator.active { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- スタート画面 -->
+<div id="start-overlay">
+  <div class="preview-char">🎵</div>
+  <h1>オタマトーン Pro</h1>
+  <p>
+    左：シッポをなぞって音程<br>
+    右ボタン長押し：口パクでワウ<br>
+    細かく震わすとビブラート！
+  </p>
+  <button id="start-btn">▶ 演奏を始める</button>
+</div>
+
+<!-- メイン画面 -->
+<div id="app">
+
+  <!-- 左：シッポスイッチ -->
+  <div id="stem-section">
+    <div class="label">シッポ</div>
+    <div id="stem-wrap">
+      <div id="stem-track"></div>
+      <div id="stem-dot"></div>
+    </div>
+    <div class="hint-text">細かく震わすと<br>ビブラート ✨</div>
+  </div>
+
+  <!-- 右：顔＆ワウ -->
+  <div id="face-section">
+    <!-- オタマトーン SVG キャラ -->
+    <svg id="otama-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+      <!-- ボディ（しずく型） -->
+      <ellipse cx="100" cy="95" rx="78" ry="88" fill="#fffde7" stroke="#e0d89a" stroke-width="3"/>
+      <!-- 頬 -->
+      <ellipse cx="65" cy="110" rx="14" ry="9" fill="rgba(255,100,120,0.25)"/>
+      <ellipse cx="135" cy="110" rx="14" ry="9" fill="rgba(255,100,120,0.25)"/>
+      <!-- 左目 -->
+      <ellipse cx="76" cy="88" rx="11" ry="13" fill="#222"/>
+      <circle cx="79" cy="84" r="4" fill="#fff"/>
+      <!-- 右目 -->
+      <ellipse cx="124" cy="88" rx="11" ry="13" fill="#222"/>
+      <circle cx="127" cy="84" r="4" fill="#fff"/>
+      <!-- 口（動的に変化） -->
+      <g id="mouth-group">
+        <!-- 閉じた口 -->
+        <path id="mouth-closed" d="M78 118 Q100 126 122 118" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round"/>
+        <!-- 開いた口（初期非表示） -->
+        <ellipse id="mouth-open" cx="100" cy="124" rx="24" ry="16" fill="#cc2244" stroke="#333" stroke-width="3" opacity="0"/>
+        <!-- 歯（開いたとき） -->
+        <rect id="mouth-teeth" x="82" y="116" width="36" height="10" rx="4" fill="white" opacity="0"/>
+      </g>
+      <!-- シッポ（下に伸びる） -->
+      <path d="M85 175 Q75 195 60 210 Q80 200 100 215 Q120 200 140 210 Q125 195 115 175 Z" fill="#fffde7" stroke="#e0d89a" stroke-width="2"/>
+    </svg>
+
+    <!-- 現在の音名 -->
+    <div id="note-display">--</div>
+
+    <!-- ワウボタン -->
+    <div id="wah-btn">👄 口パク（ワウ）</div>
+  </div>
+</div>
+
+<!-- 音量バー -->
+<div id="vol-bar-wrap">
+  <div id="vol-bar"></div>
+</div>
+
+<!-- Vibrato インジケーター -->
+<div id="vibrato-indicator">〜 ビブラート 〜</div>
+
+<script>
+// ====================================================
+//  オタマトーン Pro — Web Audio Engine
+// ====================================================
+let audioCtx = null;
+let osc = null;
+let gainNode = null;
+let filterNode = null;
+let vibratoLFO = null;
+let vibratoGain = null;
+
+const WAVE_TYPE  = 'triangle';
+const MIN_FREQ   = 110;   // A2
+const MAX_FREQ   = 1175;  // D6 (オタマトーンっぽい上限)
+const GLIDE_T    = 0.04;  // ポルタメント時定数
+
+// 音名マッピング（対数スケール）
+const NOTES = [
+  { name:'A2',  freq:110  },
+  { name:'B2',  freq:123.5},
+  { name:'C3',  freq:130.8},
+  { name:'D3',  freq:146.8},
+  { name:'E3',  freq:164.8},
+  { name:'F3',  freq:174.6},
+  { name:'G3',  freq:196  },
+  { name:'A3',  freq:220  },
+  { name:'B3',  freq:246.9},
+  { name:'C4',  freq:261.6},
+  { name:'D4',  freq:293.7},
+  { name:'E4',  freq:329.6},
+  { name:'F4',  freq:349.2},
+  { name:'G4',  freq:392  },
+  { name:'A4',  freq:440  },
+  { name:'B4',  freq:493.9},
+  { name:'C5',  freq:523.3},
+  { name:'D5',  freq:587.3},
+  { name:'E5',  freq:659.3},
+  { name:'F5',  freq:698.5},
+  { name:'G5',  freq:784  },
+  { name:'A5',  freq:880  },
+  { name:'B5',  freq:987.8},
+  { name:'D6',  freq:1174.7},
+];
+
+// 音名表示ラベルを stemTrack 上に配置
+function buildNoteLabels() {
+  const wrap = document.getElementById('stem-wrap');
+  const minLog = Math.log(MIN_FREQ);
+  const maxLog = Math.log(MAX_FREQ);
+  NOTES.filter((n, i) => i % 2 === 0 || n.name.includes('4')).forEach(note => {
+    const relY = 1 - (Math.log(note.freq) - minLog) / (maxLog - minLog);
+    const pct  = relY * 100;
+    const el   = document.createElement('div');
+    el.className = 'note-label';
+    el.textContent = note.name;
+    el.style.top = pct + '%';
+    wrap.appendChild(el);
+  });
+}
+
+function nearestNote(freq) {
+  let best = NOTES[0];
+  let bestDist = Infinity;
+  for (const n of NOTES) {
+    const d = Math.abs(Math.log(n.freq) - Math.log(freq));
+    if (d < bestDist) { bestDist = d; best = n; }
+  }
+  return best;
+}
+
+function freqFromY(clientY) {
+  const rect = document.getElementById('stem-track').getBoundingClientRect();
+  let rel = (clientY - rect.top) / rect.height;
+  rel = Math.max(0, Math.min(1, rel));
+  // 対数スケールで自然な音程分布
+  const minLog = Math.log(MIN_FREQ);
+  const maxLog = Math.log(MAX_FREQ);
+  return Math.exp(maxLog - rel * (maxLog - minLog));
+}
+
+// ====================================================
+//  AudioContext セットアップ
+// ====================================================
+function setupAudio() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  osc = audioCtx.createOscillator();
+  osc.type = WAVE_TYPE;
+  osc.frequency.value = 440;
+
+  // ビブラートLFO
+  vibratoLFO = audioCtx.createOscillator();
+  vibratoLFO.type = 'sine';
+  vibratoLFO.frequency.value = 5.5;
+
+  vibratoGain = audioCtx.createGain();
+  vibratoGain.gain.value = 0;  // 初期はゼロ
+  vibratoLFO.connect(vibratoGain);
+  vibratoGain.connect(osc.frequency);
+
+  // ローパスフィルター（ワウ）
+  filterNode = audioCtx.createBiquadFilter();
+  filterNode.type = 'lowpass';
+  filterNode.frequency.value = 500;
+  filterNode.Q.value = 2.5;
+
+  // 音量
+  gainNode = audioCtx.createGain();
+  gainNode.gain.value = 0;
+
+  osc.connect(filterNode);
+  filterNode.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+
+  osc.start();
+  vibratoLFO.start();
+}
+
+// ====================================================
+//  スタートボタン
+// ====================================================
+document.getElementById('start-btn').addEventListener('click', () => {
+  setupAudio();
+  buildNoteLabels();
+  document.getElementById('start-overlay').style.display = 'none';
+});
+
+// ====================================================
+//  シッポ（音程）制御
+// ====================================================
+const stemTrack = document.getElementById('stem-track');
+const stemDot   = document.getElementById('stem-dot');
+const noteDisplay = document.getElementById('note-display');
+const volBar    = document.getElementById('vol-bar');
+
+let stemActive  = false;
+let lastY       = 0;
+let prevYs      = [];           // ビブラート検出用の直近Yバッファ
+let vibratoActive = false;
+let vibratoTimer  = null;
+
+function activateVibrato() {
+  if (!vibratoActive) {
+    vibratoActive = true;
+    vibratoGain.gain.setTargetAtTime(12, audioCtx.currentTime, 0.1);
+    document.getElementById('vibrato-indicator').classList.add('active');
+  }
+  clearTimeout(vibratoTimer);
+  vibratoTimer = setTimeout(deactivateVibrato, 400);
+}
+
+function deactivateVibrato() {
+  vibratoActive = false;
+  vibratoGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.15);
+  document.getElementById('vibrato-indicator').classList.remove('active');
+}
+
+function onStemTouch(y, isStart) {
+  if (!audioCtx) return;
+  const freq = freqFromY(y);
+
+  if (isStart) {
+    stemActive = true;
+    prevYs = [y];
+    stemDot.style.opacity = '1';
+    gainNode.gain.setTargetAtTime(0.28, audioCtx.currentTime, 0.015);
+    osc.frequency.cancelScheduledValues(audioCtx.currentTime);
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    document.getElementById('otama-svg').style.transform = 'scale(1.06) rotate(-2deg)';
+  } else {
+    // ポルタメント
+    osc.frequency.setTargetAtTime(freq, audioCtx.currentTime, GLIDE_T);
+
+    // ビブラート検出：直近 5 点の Y 分散を見る
+    prevYs.push(y);
+    if (prevYs.length > 6) prevYs.shift();
+    if (prevYs.length >= 4) {
+      const mean = prevYs.reduce((a,b) => a+b, 0) / prevYs.length;
+      const variance = prevYs.reduce((a,b) => a + (b-mean)**2, 0) / prevYs.length;
+      if (variance > 1.2 && variance < 400) {
+        activateVibrato();
+      }
+    }
+  }
+
+  // ドット位置
+  const rect = stemTrack.getBoundingClientRect();
+  let relY = (y - rect.top) / rect.height;
+  relY = Math.max(0, Math.min(1, relY));
+  stemDot.style.top = (relY * 100) + '%';
+
+  // 音名表示
+  const note = nearestNote(freq);
+  noteDisplay.textContent = note.name;
+  noteDisplay.classList.add('active');
+
+  // 音量バー
+  volBar.style.height = '100%';
+}
+
+function onStemEnd() {
+  if (!audioCtx || !stemActive) return;
+  stemActive = false;
+  gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.06);
+  stemDot.style.opacity = '0';
+  noteDisplay.classList.remove('active');
+  noteDisplay.textContent = '--';
+  volBar.style.height = '0%';
+  deactivateVibrato();
+  prevYs = [];
+  document.getElementById('otama-svg').style.transform = 'scale(1)';
+}
+
+stemTrack.addEventListener('touchstart', e => {
+  e.preventDefault();
+  onStemTouch(e.touches[0].clientY, true);
+}, {passive: false});
+
+stemTrack.addEventListener('touchmove', e => {
+  e.preventDefault();
+  onStemTouch(e.touches[0].clientY, false);
+}, {passive: false});
+
+stemTrack.addEventListener('touchend',   e => { e.preventDefault(); onStemEnd(); }, {passive: false});
+stemTrack.addEventListener('touchcancel',e => { e.preventDefault(); onStemEnd(); }, {passive: false});
+
+// ====================================================
+//  口パク（ワウ）制御
+// ====================================================
+const wahBtn      = document.getElementById('wah-btn');
+const mouthClosed = document.getElementById('mouth-closed');
+const mouthOpen   = document.getElementById('mouth-open');
+const mouthTeeth  = document.getElementById('mouth-teeth');
+
+function openMouth() {
+  if (!audioCtx) return;
+  mouthClosed.style.opacity = '0';
+  mouthOpen.style.opacity   = '1';
+  mouthTeeth.style.opacity  = '1';
+  wahBtn.classList.add('pressed');
+  filterNode.frequency.setTargetAtTime(3500, audioCtx.currentTime, 0.025);
+  filterNode.Q.setTargetAtTime(1.5, audioCtx.currentTime, 0.025);
+}
+
+function closeMouth() {
+  if (!audioCtx) return;
+  mouthClosed.style.opacity = '1';
+  mouthOpen.style.opacity   = '0';
+  mouthTeeth.style.opacity  = '0';
+  wahBtn.classList.remove('pressed');
+  filterNode.frequency.setTargetAtTime(500, audioCtx.currentTime, 0.04);
+  filterNode.Q.setTargetAtTime(2.5, audioCtx.currentTime, 0.04);
+}
+
+wahBtn.addEventListener('touchstart',  e => { e.preventDefault(); openMouth();  }, {passive: false});
+wahBtn.addEventListener('touchend',    e => { e.preventDefault(); closeMouth(); }, {passive: false});
+wahBtn.addEventListener('touchcancel', e => { e.preventDefault(); closeMouth(); }, {passive: false});
+
+// マウス対応（PC デモ用）
+wahBtn.addEventListener('mousedown', () => openMouth());
+wahBtn.addEventListener('mouseup',   () => closeMouth());
+wahBtn.addEventListener('mouseleave',() => closeMouth());
+
+stemTrack.addEventListener('mousedown', e => onStemTouch(e.clientY, true));
+stemTrack.addEventListener('mousemove', e => { if (stemActive) onStemTouch(e.clientY, false); });
+stemTrack.addEventListener('mouseup',   () => onStemEnd());
+stemTrack.addEventListener('mouseleave',() => onStemEnd());
+
+// ====================================================
+//  画面全体のスクロール禁止
+// ====================================================
+document.addEventListener('touchmove', e => e.preventDefault(), {passive: false});
+document.addEventListener('touchstart',e => {
+  // AudioContext が suspended なら再開
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}, {passive: true});
+</script>
+</body>
+</html>

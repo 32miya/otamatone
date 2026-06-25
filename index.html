@@ -352,20 +352,13 @@ let filterNode = null;
 let vibratoLFO = null;
 let vibratoGain = null;
 
-const WAVE_TYPE  = 'triangle';
-const MIN_FREQ   = 110;   // A2
-const MAX_FREQ   = 1175;  // D6 (オタマトーンっぽい上限)
+const WAVE_TYPE  = 'sawtooth'; // 倍音豊富で明るい鋸歯状波
+const MIN_FREQ   = 220;   // A3
+const MAX_FREQ   = 2093;  // C7
 const GLIDE_T    = 0.04;  // ポルタメント時定数
 
 // 音名マッピング（対数スケール）
 const NOTES = [
-  { name:'A2',  freq:110  },
-  { name:'B2',  freq:123.5},
-  { name:'C3',  freq:130.8},
-  { name:'D3',  freq:146.8},
-  { name:'E3',  freq:164.8},
-  { name:'F3',  freq:174.6},
-  { name:'G3',  freq:196  },
   { name:'A3',  freq:220  },
   { name:'B3',  freq:246.9},
   { name:'C4',  freq:261.6},
@@ -382,7 +375,12 @@ const NOTES = [
   { name:'G5',  freq:784  },
   { name:'A5',  freq:880  },
   { name:'B5',  freq:987.8},
+  { name:'C6',  freq:1046.5},
   { name:'D6',  freq:1174.7},
+  { name:'E6',  freq:1318.5},
+  { name:'G6',  freq:1568  },
+  { name:'A6',  freq:1760  },
+  { name:'C7',  freq:2093  },
 ];
 
 // 音名表示ラベルを stemTrack 上に配置
@@ -444,8 +442,8 @@ function setupAudio() {
   // ローパスフィルター（ワウ）
   filterNode = audioCtx.createBiquadFilter();
   filterNode.type = 'lowpass';
-  filterNode.frequency.value = 500;
-  filterNode.Q.value = 2.5;
+  filterNode.frequency.value = 1800; // 明るめの初期カットオフ
+  filterNode.Q.value = 1.8;
 
   // 音量
   gainNode = audioCtx.createGain();
@@ -581,8 +579,8 @@ function openMouth() {
   mouthOpen.style.opacity   = '1';
   mouthTeeth.style.opacity  = '1';
   wahBtn.classList.add('pressed');
-  filterNode.frequency.setTargetAtTime(3500, audioCtx.currentTime, 0.025);
-  filterNode.Q.setTargetAtTime(1.5, audioCtx.currentTime, 0.025);
+  filterNode.frequency.setTargetAtTime(7000, audioCtx.currentTime, 0.025);
+  filterNode.Q.setTargetAtTime(1.2, audioCtx.currentTime, 0.025);
 }
 
 function closeMouth() {
@@ -591,8 +589,8 @@ function closeMouth() {
   mouthOpen.style.opacity   = '0';
   mouthTeeth.style.opacity  = '0';
   wahBtn.classList.remove('pressed');
-  filterNode.frequency.setTargetAtTime(500, audioCtx.currentTime, 0.04);
-  filterNode.Q.setTargetAtTime(2.5, audioCtx.currentTime, 0.04);
+  filterNode.frequency.setTargetAtTime(1800, audioCtx.currentTime, 0.04);
+  filterNode.Q.setTargetAtTime(1.8, audioCtx.currentTime, 0.04);
 }
 
 wahBtn.addEventListener('touchstart',  e => { e.preventDefault(); openMouth();  }, {passive: false});
